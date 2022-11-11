@@ -38,7 +38,7 @@ RUN ln -fs /etc/resolv.conf /usr/x86_64-linux-gnu/etc/
 ENV QEMU_LD_PREFIX=/usr/x86_64-linux-gnu
 
 # amd64 Github Actions Runner.
-ARG version=2.298.2
+ARG version=2.299.1
 ARG homedir=/actions-runner
 # Copy scripts from  myoung34/docker-github-actions-runner
 RUN curl -L https://raw.githubusercontent.com/myoung34/docker-github-actions-runner/${version}/entrypoint.sh -o /entrypoint.sh && chmod 755 /entrypoint.sh
