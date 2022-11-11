@@ -16,6 +16,7 @@ RUN apt-get update && apt-get -y install \
         cmake \
         cpu-checker \
         curl \
+        dumb-init \
         wget \
         flex \
         git \
@@ -38,17 +39,21 @@ ENV QEMU_LD_PREFIX=/usr/x86_64-linux-gnu
 
 # amd64 Github Actions Runner.
 ARG version=2.298.2
-RUN useradd -m actions-runner
-RUN echo "actions-runner ALL=(ALL) NOPASSWD: ALL" >>/etc/sudoers
-RUN echo "Defaults env_keep += \"DEBIAN_FRONTEND\"" >>/etc/sudoers
-RUN usermod -a -G kvm actions-runner
-USER actions-runner
-ENV USER=actions-runner
-WORKDIR /home/actions-runner
-RUN curl -L https://github.com/actions/runner/releases/download/v${version}/actions-runner-linux-x64-${version}.tar.gz | tar -xz
-VOLUME /home/actions-runner
+ARG homedir=/actions-runner
+# Copy scripts from  myoung34/docker-github-actions-runner
+RUN curl -L https://raw.githubusercontent.com/myoung34/docker-github-actions-runner/${version}/entrypoint.sh -o /entrypoint.sh && chmod 755 /entrypoint.sh
+RUN curl -L https://raw.githubusercontent.com/myoung34/docker-github-actions-runner/${version}/token.sh -o /token.sh && chmod 755 /token.sh
 
-# Scripts.
-COPY fs/ /
-ENTRYPOINT ["/usr/bin/entrypoint"]
-CMD ["/usr/bin/actions-runner"]
+RUN useradd -d ${homedir} -m runner
+RUN echo "runner ALL=(ALL) NOPASSWD: ALL" >>/etc/sudoers
+RUN echo "Defaults env_keep += \"DEBIAN_FRONTEND\"" >>/etc/sudoers
+RUN usermod -a -G kvm runner
+USER runner
+ENV USER=runner
+WORKDIR ${homedir}
+RUN curl -L https://github.com/actions/runner/releases/download/v${version}/actions-runner-linux-x64-${version}.tar.gz | tar -xz
+
+VOLUME ${homedir}
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["./bin/Runner.Listener", "run", "--startuptype", "service"]
