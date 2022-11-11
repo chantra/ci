@@ -52,6 +52,7 @@ USER runner
 ENV USER=runner
 WORKDIR ${homedir}
 RUN curl -L https://github.com/actions/runner/releases/download/v${version}/actions-runner-linux-x64-${version}.tar.gz | tar -xz
+USER root
 
 VOLUME ${homedir}
 
