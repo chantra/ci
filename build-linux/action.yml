@@ -17,12 +17,18 @@ inputs:
     description: 'llvm version'
     required: false
     default: '16'
+  kernel-directory:
+    description: 'directory to change to to build the kernel'
+    required: false
+    default: '.'
+
 runs:
   using: "composite"
   steps:
     - name: build linux
       shell: bash
       run: |
+        cd ${{ inputs.kernel-directory }}
         kbuild_output="$(realpath ${{ inputs.kbuild-output }})"
         export LLVM_VERSION=${{ inputs.llvm-version }}
         ${GITHUB_ACTION_PATH}/build.sh "${{ inputs.arch }}" "${{ inputs.toolchain }}" "${kbuild_output}"
